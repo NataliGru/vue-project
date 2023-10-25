@@ -70,15 +70,19 @@ export default {
         </form>
       </header>
 
-      <section class="todoapp__main">
+      <TransitionGroup
+        name="list"
+        tag="section"
+        class="todoapp__main"
+      >
         <TodoItem
-          v-for="todo, index of todos"
+          v-for="todo, index of visibleTodos"
           :key="todo.id"
           :todo="todo"
-          @update="todos[index] = $event"
-          @delete="todos.splice(index, 1)"
+          @update="Object.assign(todo, $event)"
+          @delete="todos.splice(todos.indexOf(todo), 1)"
         />
-      </section>
+      </TransitionGroup>
 
       <footer class="todoapp__footer">
         <span class="todoapp__active-count">
@@ -110,4 +114,15 @@ export default {
 </template>
 
 <style>
+.list-enter-active,
+.list-leave-active {
+  max-height: 60px;
+  transition: all 0.5s ease;
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: scaleY(0);
+}
 </style>
