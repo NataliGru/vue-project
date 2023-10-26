@@ -50,7 +50,7 @@ export default {
       this.$nextTick(() => {
         this.$refs['title-field'].focus();
       });
-    },
+    }
   },
 };
 </script>
@@ -83,7 +83,12 @@ export default {
         {{ todo.title }}
       </span>
 
-      <button class="todo__remove" @click="remove">x</button>
+      <button
+        class="todo__remove"
+        @click="remove"
+      >
+        x
+      </button>
     </template>
 
     <div class="modal overlay" :class="{ 'is-active': false }">

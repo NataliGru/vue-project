@@ -1,14 +1,17 @@
 <script>
-import * as todosApi from './api/todos';
+import * as todosApi from './api';
+
+import Message from './components/Message.vue';
 import StatusFilter from './components/StatusFilter.vue';
 import TodoItem from './components/TodoItem.vue';
-import Message from './components/Message.vue';
 
 export default {
   components: {
     StatusFilter,
     TodoItem,
     Message,
+    StatusFilter,
+    TodoItem,
   },
   data() {
     return {
@@ -20,10 +23,10 @@ export default {
   },
   computed: {
     activeTodos() {
-      return this.todos.filter(todo => !todo.completed);
+      return this.todos.filter((todo) => !todo.completed);
     },
     completedTodos() {
-      return this.todos.filter(todo => todo.completed);
+      return this.todos.filter((todo) => todo.completed);
     },
     visibleTodos() {
       switch (this.status) {
@@ -36,39 +39,52 @@ export default {
         default:
           return this.todos;
       }
-    }
+    },
   },
   mounted() {
     todosApi.getTodos()
-      .then(({ data }) => this.todos = data)
+      .then(({ data }) => {
+        this.todos = data;
+      })
       .catch(() => {
-        this.errorMessage = 'Unable to load todos';
+        this.errorMessage = "Unable to load todos";
       });
   },
   methods: {
-    addTodo() {
-      todosApi.createTodo(this.title)
+    handleSubmit() {
+      todosApi
+        .createTodo(this.title)
         .then(({ data }) => {
           this.todos = [...this.todos, data];
           this.title = '';
+        })
+        .catch(() => {
+          this.errorMessage = 'Unable to create a todo';
         });
     },
+
     updateTodo({ id, title, completed }) {
-      todosApi.updateTodo({ id, title, completed })
-        .then(({ data }) => {
-          this.todos = this.todos.map(
-            todo => todo.id !== id ? todo : data,
-          );
-        });
+      todosApi.updateTodo({ id, title, completed }).then(({ data }) => {
+        this.todos = this.todos.map((todo) => (todo.id !== id ? todo : data));
+      });
     },
     deleteTodo(todoId) {
-      todosApi.deleteTodo(todoId)
-        .then(() => {
-          this.todos = this.todos.filter(
-            todo => todo.id !== todoId,
-          );
+      todosApi.deleteTodo(todoId).then(() => {
+        this.todos = this.todos.filter((todo) => todo.id !== todoId);
+      });
+    },
+    toggleAll() {
+      const allCompleted = this.todos.every((todo) => todo.completed);
+
+      this.todos.forEach((todo) => {
+        todo.completed = !allCompleted;
+        this.updateTodo({
+          id: todo.id,
+          title: todo.title,
+          completed: !allCompleted,
         });
-    }
+      });
+    },
   },
 };
 </script>
@@ -82,6 +98,7 @@ export default {
         <button
           class="todoapp__toggle-all"
           :class="{ active: activeTodos.length === 0 }"
+          @click="toggleAll"
         ></button>
 
         <form @submit.prevent="handleSubmit">
@@ -94,13 +111,9 @@ export default {
         </form>
       </header>
 
-      <TransitionGroup
-        name="list"
-        tag="section"
-        class="todoapp__main"
-      >
+      <TransitionGroup name="list" tag="section" class="todoapp__main">
         <TodoItem
-          v-for="todo, index of visibleTodos"
+          v-for="(todo, index) of visibleTodos"
           :key="todo.id"
           :todo="todo"
           @update="updateTodo"
@@ -117,22 +130,23 @@ export default {
 
         <button
           v-if="activeTodos.length > 0"
+          type="button"
           class="todoapp__clear-completed"
+          @click="completedTodos.forEach(todo => deleteTodo(todo.id))"
         >
           Clear completed
         </button>
       </footer>
     </div>
 
-    <Message class="is-warning" :active="errorMessage !== ''">
-      <template #default="{ x }">
-        <p>{{ errorMessage }} {{ x }}</p>
-      </template>
-
-      <template #header>
-        <p>Server Error</p>
-      </template>
+    <Message
+    class="is-danger" 
+      :active="errorMessage.length > 0" 
+      @hide="errorMessage = ''"
+    >
+      <p>{{ errorMessage }}</p>
     </Message>
+
   </div>
 </template>
 

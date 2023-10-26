@@ -1,14 +1,16 @@
 import { client } from './utils/httpClient'
 
+const USER_ID = 11124;
+
 export const getTodos = () => {
-  return client.get('/todos?userId=6342');
+  return client.get(`/todos?userId=${USER_ID}`);
 };
 
 export const createTodo = (title) => {
   return client.post('/todos', {
     title,
     completed: false,
-    userId: 6342,
+    userId: USER_ID,
   });
 };
 
